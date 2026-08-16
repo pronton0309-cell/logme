@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ログミー</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="/js/main.js" defer></script>
+</head>
+<body>
+  <main class="main">
+    <header class="header">
+      <h1 class="header-title">ログミー（読書管理）</h1>
+    </header>
+
+    <div class="addBook">
+      <h2 class="subTitle">本を追加</h2>
+      <input type="text" id="title" placeholder="タイトル">
+      <input type="text" id="author" placeholder="著者">
+      <button onclick="addBook()">追加</button>
+
+      <br><br>
+
+      <textarea id = "memo" placeholder="感想メモ"></textarea>
+
+      <br><br>
+
+      <select id = "rating">
+        <option value="1">★1</option>
+        <option value="2">★2</option>
+        <option value="3">★3</option>
+        <option value="4">★4</option>
+        <option value="5">★5</option>
+      </select>
+
+      <select id = "status">
+        <option value = "未読">未読</option>
+        <option value = "読了">読了</option>
+        <option value = "未購入">未購入</option>
+      </select>
+    </div>
+
+    <h3 class="author-title">著者検索</h3>
+    <input type ="text" id="searchAuthor" placeholder="著者名を入力">
+    <button onclick="loadBooks()">検索</button>
+
+    <h3 class="mode-title">現在の表示</h3>
+    <p id="modeText">現在：登録順</p>
+    <button onclick="resetSort()">登録順</button>
+    <button onclick="sortByRating()">おすすめ降順</button>
+    <button onclick="showTop10()">おすすめトップ10表示</button>
+
+    <h2 class="subTitle">本一覧</h2>
+    <h3 id="bookCount"></h3>
+    <ul id="bookList"></ul>
+
+    <div id="jsi-btn" class="btn">
+        <button id="jsi-top-btn" class="scroll-btn top-btn">TOP</button>
+        <button id="jsi-down-btn" class="scroll-btn down-btn">DOWN</button>
+    </div>
+
+
+    <script>
+        let sortMode = "normal";
+        let displayMode = "normal";
+
+        async function loadBooks() {
+            const keyword = document.getElementById("searchAuthor").value;
+            const response = await fetch('/books');
+            const books = await response.json();
+            let displayBooks = [...books];
+            if (sortMode === "rating"){
+                displayBooks.sort((a,b) => b.rating - a.rating);
+            }
+            if (displayMode === "top10"){
+                displayBooks = displayBooks.filter(book => book.top10 === true);
+            }
+            document.getElementById("bookCount").textContent =
+            "登録冊数：" + books.length + "冊";
+
+            const list = document.getElementById('bookList');
+            list.innerHTML = '';
+
+            displayBooks.forEach((book) => {
+                if(!book.author.includes(keyword)){
+                    return;
+                }
+                const li = document.createElement('li');
+
+                li.className = "book-card";
+
+                li.innerHTML = `
+                  <div class="top-line">
+                    <span>
+                        ${book.top10 === true ? "⑩" : ""}
+                    </span>
+                    <span class="top-area"></span>
+                  </div>
+
+                  <div class="book-header">
+                     <strong>${book.title}</strong> /${book.author}</strong>
+                     <span class="delete-area"></span>
+                  </div>
+
+                  <div>おすすめ度：★${book.rating}</div>
+                  <div>ステータス：${book.status}</div>
+                  <div>感想：${book.memo}</div>
+                `;
+                const topButton = document.createElement('button');
+                topButton.textContent = 'top10切り替え';
+
+                topButton.onclick = async() => {
+                    await fetch('/books/' + book.id + '/top10', {
+                      method: 'PUT'
+                    });
+                    loadBooks();
+                }
+                li.querySelector(".top-area").appendChild(topButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+
+                deleteButton.onclick = async() => {
+                    await fetch('/books/' + book.id,{
+                        method : 'DELETE'
+                    });
+                    loadBooks();
+                };
+                li.querySelector(".delete-area").appendChild(deleteButton);
+
+                list.appendChild(li);
+
+                const modeText = document.getElementById("modeText");
+                if(displayMode === "top10"){
+                    modeText.textContent = "現在：おすすめトップ10";
+                }else if(sortMode === "rating"){
+                    modeText.textContent = "現在：おすすめ降順";
+                }else{
+                    modeText.textContent = "現在：登録順";
+                }
+            });
+        }
+
+        function sortByRating(){
+            displayMode = "normal";
+            sortMode = "rating";
+            loadBooks();
+        }
+
+        function resetSort(){
+            displayMode = "normal";
+            sortMode ="normal";
+            loadBooks();
+        }
+
+        function showTop10(){
+            displayMode = "top10";
+            loadBooks();
+        }
+
+
+
+        async function addBook() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const memo = document.getElementById("memo").value;
+            const rating = document.getElementById("rating").value;
+            const status = document.getElementById("status").value;
+
+
+            await fetch('/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({title,author,memo,rating,status})
+            });
+
+            document.getElementById('title').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById("memo").value = '';
+            document.getElementById("rating").value ="1";
+            document.getElementById("status").value = "未読";
+            loadBooks();
+        }
+
+        window.onload = loadBooks;
+    </script>
+  </main>
+</body>
+</html>

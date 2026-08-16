@@ -1,0 +1,86 @@
+*{
+  margin: 0; /*デフォルトのmarginを消す*/
+  padding: 0; /*デフォルトのpaddingを消す*/
+  box-sizing:border-box; /*レイアウト崩れ防止*/
+}
+:root{ /*CSS変数*/
+  --header-height:100px
+}
+.main{ /*トップだけ変数の値代入　ヘッダーの高さ変更後も中身の余白が自動変換され、被らないで済む*/
+  padding: var(--header-height) 50px 50px;
+
+}
+.header{
+  position: fixed; /*ブラウザ基準で固定*/
+  top: 0;
+  left: 0;
+  width: 100%; /*ヘッダー画面いっぱい*/
+  height: var(--header-height); /*ヘッダーの高さ。rootで決めたら自動で対応*/
+  background-color: #00BFFF;
+}
+.header-title{
+  height: var(--header-height);
+  display: flex; /*ここと*/
+  justify-content: center; /*ここと*/
+  align-items: center; /*ここが合わさって上下左右中央に配置*/
+  text-align: center;
+  color: #ffffff;
+  font-size: 50px;
+}
+
+.scroll-btn{ /*TOPとDOWNの共通部分*/
+  position: fixed; /*位置固定*/
+  bottom: 20px; /*下から20pxの位置*/
+
+  background-color: #00BFFF;
+  color: #ffffff;
+  font-size: 20px;
+  border-radius: 80px; /*角まるっこくしてね*/
+  border: 1px solid #ffffff; /*背景との差別化のためにうっすら白線で囲う*/
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+
+  width: 80px;
+  height: 80px;
+}
+.scroll-btn:hover { /*カーソル乗ったら色変える*/
+    background-color: #0099cc;
+}
+.scroll-btn:active { /*クリックしてる間だけサイズ小さくする*/
+    transform: scale(0.95);
+}
+.top-btn{
+  right: 110px;
+}
+.down-btn{
+  right: 20px;
+}
+
+.subTitle{
+  text-align: center;
+  padding: 20px 5px 0;
+  border-bottom: 3px solid #00BFFF;
+  width: 150px;
+}
+.author-title{
+  text-align: center;
+  padding-top: 20px;
+  border-bottom:2px solid #00BFFF;
+  width: 100px;
+}
+.mode-title{
+  text-align: center;
+  padding-top: 20px;
+  border-bottom: 2px solid #00BFFF;
+  width: 110px;
+}
+
+.book-card{
+  border:2px solid #000066;
+  padding:10px;
+  margin-bottom:10px;
+  max-width:600px;
+}
+.book-header{
+  display:flex;
+  justify-content:space-between;
+}
